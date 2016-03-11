@@ -1,0 +1,3 @@
+[submodule "04_02__Bayesian_Learning_of_Classifiers_with_Stan__Torsten_Scholak/talk_sources"]
+	path = 04_02__Bayesian_Learning_of_Classifiers_with_Stan__Torsten_Scholak/talk_sources
+	url = https://github.com/tscholak/bayesian_classification_with_stan
