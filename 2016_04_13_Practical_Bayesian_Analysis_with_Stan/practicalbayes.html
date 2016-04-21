@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Jan Scholz, Sr. Data Scientist at Architech" />
+  <meta name="date" content="2016-04-11" />
+  <title>Practical Bayesian Analysis (with Stan)</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script type="text/javascript">/*<![CDATA[*/
+  /*
+  March 19, 2004 MathHTML (c) Peter Jipsen http://www.chapman.edu/~jipsen
+  Released under the GNU General Public License version 2 or later.
+  See the GNU General Public License (at http://www.gnu.org/copyleft/gpl.html)
+  for more details.
+  */
+  
+  function convertMath(node) {// for Gecko
+    if (node.nodeType==1) {
+      var newnode =
+        document.createElementNS("http://www.w3.org/1998/Math/MathML",
+          node.nodeName.toLowerCase());
+      for(var i=0; i < node.attributes.length; i++)
+        newnode.setAttribute(node.attributes[i].nodeName,
+          node.attributes[i].value);
+      for (var i=0; i<node.childNodes.length; i++) {
+        var st = node.childNodes[i].nodeValue;
+        if (st==null || st.slice(0,1)!=" " && st.slice(0,1)!="\n")
+          newnode.appendChild(convertMath(node.childNodes[i]));
+      }
+      return newnode;
+    }
+    else return node;
+  }
+  
+  function convert() {
+    var mmlnode = document.getElementsByTagName("math");
+    var st,str,node,newnode;
+    for (var i=0; i<mmlnode.length; i++)
+      if (document.createElementNS!=null)
+        mmlnode[i].parentNode.replaceChild(convertMath(mmlnode[i]),mmlnode[i]);
+      else { // convert for IE
+        str = "";
+        node = mmlnode[i];
+        while (node.nodeName!="/MATH") {
+          st = node.nodeName.toLowerCase();
+          if (st=="#text") str += node.nodeValue;
+          else {
+            str += (st.slice(0,1)=="/" ? "</m:"+st.slice(1) : "<m:"+st);
+            if (st.slice(0,1)!="/")
+               for(var j=0; j < node.attributes.length; j++)
+                 if (node.attributes[j].value!="italic" &&
+                   node.attributes[j].value!="" &&
+                   node.attributes[j].value!="inherit" &&
+                   node.attributes[j].value!=undefined)
+                   str += " "+node.attributes[j].nodeName+"="+
+                       "\""+node.attributes[j].value+"\"";
+            str += ">";
+          }
+          node = node.nextSibling;
+          node.parentNode.removeChild(node.previousSibling);
+        }
+        str += "</m:math>";
+        newnode = document.createElement("span");
+        node.parentNode.replaceChild(newnode,node);
+        newnode.innerHTML = str;
+      }
+  }
+  
+  if (document.createElementNS==null) {
+    document.write("<object id=\"mathplayer\"\
+    classid=\"clsid:32F66A20-7614-11D4-BD11-00104BD3F987\"></object>");
+    document.write("<?import namespace=\"m\" implementation=\"#mathplayer\"?>");
+  }
+  if(typeof window.addEventListener != 'undefined'){
+    window.addEventListener('load', convert, false);
+  }
+  if(typeof window.attachEvent != 'undefined') {
+    window.attachEvent('onload', convert);
+  }
+  /*]]>*/
+  </script>
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Practical Bayesian Analysis (with Stan)</h1>
+  <p class="author">
+Jan Scholz, Sr. Data Scientist at Architech
+  </p>
+  <p class="date">2016-04-11</p>
+</div>
+<div id="intro" class="slide section level1">
+<h1>Intro</h1>
+<p>Lecture on Bayesian Analysis held at the <a href="http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/">Toronto Probabilistic Programming Meetup</a> at <a href="http://www.architech.ca/">Architech</a>, Toronto, 13 April 2016.</p>
+</div>
+<div id="multilevel-models" class="slide section level1">
+<h1>Multilevel Models</h1>
+<div class="figure">
+<img src="http://www.stat.columbia.edu/~gelman/arm/cover.gif" alt="Data Analysis Using Regression and Multilevel/Hierachical Models by Andrew Gelman and Jennifer Hill" />
+<p class="caption">Data Analysis Using Regression and Multilevel/Hierachical Models by Andrew Gelman and Jennifer Hill</p>
+</div>
+</div>
+<div id="radon-levels" class="slide section level1">
+<h1>Radon Levels</h1>
+<p>Download ...</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">wget</span> http://www.stat.columbia.edu/~gelman/arm/examples/ARM_Data.zip
+<span class="kw">unzip</span> ARM_Data.zip</code></pre></div>
+<p>... and read data into R</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(ggplot2)
+
+t.orig &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;ARM_Data/radon/srrs2.dat&quot;</span>, <span class="dt">strip.white =</span> <span class="ot">TRUE</span>)
+sel &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;LAC QUI PARLE&quot;</span>, <span class="st">&quot;AITKIN&quot;</span>, <span class="st">&quot;KOOCHICHING&quot;</span>, <span class="st">&quot;DOUGLAS&quot;</span>, <span class="st">&quot;CLAY&quot;</span>, <span class="st">&quot;STEARNS&quot;</span>, 
+    <span class="st">&quot;RAMSEY&quot;</span>, <span class="st">&quot;ST LOUIS&quot;</span>)</code></pre></div>
+</div>
+<div id="radon-levels-1" class="slide section level1">
+<h1>Radon Levels</h1>
+<p>Massage the data</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">t &lt;-<span class="st"> </span>t.orig %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">filter</span>(state==<span class="st">&#39;MN&#39;</span> &amp;<span class="st"> </span>county %in%<span class="st"> </span>sel) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">droplevels</span>() %&gt;%
+<span class="st">    </span><span class="kw">select</span>(state, county, basement, floor, activity) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">group_by</span>(county) %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">n=</span><span class="kw">n</span>()) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">ungroup</span>() %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">arrange</span>(n, county) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">floor=</span><span class="dv">1</span>-floor)
+
+t &lt;-<span class="st"> </span><span class="kw">within</span>(t, county &lt;-<span class="st"> </span><span class="kw">reorder</span>(county, n))
+t</code></pre></div>
+<pre><code>Source: local data frame [209 x 6]
+
+   state        county basement floor activity n
+1     MN LAC QUI PARLE        Y     0     11.3 2
+2     MN LAC QUI PARLE        Y     1     16.0 2
+3     MN        AITKIN        N     0      2.2 4
+4     MN        AITKIN        Y     1      2.2 4
+5     MN        AITKIN        Y     1      2.9 4
+6     MN        AITKIN        Y     1      1.0 4
+7     MN   KOOCHICHING        Y     1      1.7 7
+8     MN   KOOCHICHING        Y     1      1.4 7
+9     MN   KOOCHICHING        N     0      2.0 7
+10    MN   KOOCHICHING        N     0      1.0 7
+..   ...           ...      ...   ...      ... .</code></pre>
+</div>
+<div id="radon-levels-2" class="slide section level1">
+<h1>Radon Levels</h1>
+<div class="figure">
+<img src="figure/unnamed-chunk-3-1.png" alt="log radon levels depend on floor" />
+<p class="caption">log radon levels depend on floor</p>
+</div>
+</div>
+<div id="complete-pooling" class="slide section level1">
+<h1>Complete Pooling</h1>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi><mo>=</mo><mi>α</mi><mo>+</mo><mi>β</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">y = \alpha + \beta x</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>log</mi><mo stretchy="false" form="prefix">(</mo><mtext mathvariant="normal">activity</mtext><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>α</mi><mo>+</mo><mi>β</mi><mo>⋅</mo><mtext mathvariant="normal">floor</mtext></mrow><annotation encoding="application/x-tex">\log(\textrm{activity}) = \alpha + \beta \cdot \textrm{floor}</annotation></semantics></math></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm.pool &lt;-<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log</span>(activity) ~<span class="st"> </span>floor, <span class="dt">data=</span>t)
+pred &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">county=</span><span class="kw">levels</span>(t$county), <span class="dt">floor=</span><span class="dv">0</span>:<span class="dv">1</span>)
+pred$fit.pool &lt;-<span class="st"> </span><span class="kw">predict</span>(lm.pool, pred)</code></pre></div>
+</div>
+<div id="complete-pooling-1" class="slide section level1">
+<h1>Complete Pooling</h1>
+<div class="figure">
+<img src="figure/unnamed-chunk-5-1.png" alt="log radon levels depend on floor" />
+<p class="caption">log radon levels depend on floor</p>
+</div>
+</div>
+<div id="no-pooling-separate-intercepts" class="slide section level1">
+<h1>No-Pooling: separate intercepts</h1>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi><mo>=</mo><msub><mi>α</mi><mi>j</mi></msub><mo>+</mo><mi>β</mi><mi>x</mi><mo>,</mo><mspace width="2.0em"></mspace><mi>j</mi><mo>=</mo><mn>1</mn><mo>.</mo><mo>.</mo><mi>J</mi></mrow><annotation encoding="application/x-tex">y = \alpha_j + \beta x, \qquad j=1..J</annotation></semantics></math></p>
+<p>with <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>J</mi><annotation encoding="application/x-tex">J</annotation></semantics></math> unique counties</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm.nopool &lt;-<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log</span>(activity) ~<span class="st"> </span>floor +<span class="st"> </span>county -<span class="st"> </span><span class="dv">1</span>, <span class="dt">data=</span>t)
+pred$fit.nopool &lt;-<span class="st"> </span><span class="kw">predict</span>(lm.nopool, pred)</code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-7-1.png" />
+
+</div>
+<p>complete pooling in <font color="red">red</font>, no pooling in <font color="blue">blue</font></p>
+</div>
+<div id="partial-pooling-separate-intercepts" class="slide section level1">
+<h1>Partial Pooling: separate intercepts</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lme4)
+lmer.partpool &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="kw">log</span>(activity) ~<span class="st"> </span>floor +<span class="st"> </span>(<span class="dv">1</span>|county), <span class="dt">data=</span>t)
+pred$fit.partpool &lt;-<span class="st"> </span><span class="kw">predict</span>(lmer.partpool, pred)</code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-9-1.png" />
+
+</div>
+<p>complete pooling in <font color="red">red</font>, partial pooling in black, no pooling in <font color="blue">blue</font></p>
+<!-- ---------------------------------------------------------------------- -->
+</div>
+<div id="stan-setup" class="slide section level1">
+<h1>Stan setup</h1>
+<p>Stan is an imperative probabilistic programming language, developed for statistical inference.</p>
+<p>Stan is a probabilistic programming language in the sense that a random variable is a bona fide first-class object. Observed random variables are declared as data and unobserved random variables are declared as parameters.</p>
+<p>For continuous parameters, Stan uses Hamiltonian Monte Carlo (HMC) sampling, a form of Markov chain Monte Carlo (MCMC) sampling. Stan does not provide discrete sampling for parameters. Discrete observations can be handled directly, but discrete parameters must be marginalized out of the model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rstan)
+
+<span class="co"># For local, multicore CPU with excess RAM</span>
+<span class="co">#rstan_options(auto_write = TRUE)</span>
+<span class="co">#options(mc.cores = parallel::detectCores())</span>
+
+<span class="co"># data for stan</span>
+data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N=</span><span class="kw">nrow</span>(t), <span class="dt">J=</span><span class="kw">nlevels</span>(t$county), 
+             <span class="dt">county=</span><span class="kw">as.numeric</span>(t$county), <span class="dt">x=</span>t$floor, <span class="dt">y=</span>t$activity)</code></pre></div>
+</div>
+<div id="bayesian-linear-regression-complete-pooling" class="slide section level1">
+<h1>Bayesian linear regression: complete pooling</h1>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>n</mi></msub><mo>=</mo><mi>α</mi><mo>+</mo><mi>β</mi><msub><mi>x</mi><mi>n</mi></msub><mo>+</mo><msub><mi>ϵ</mi><mi>n</mi></msub><mspace width="2.0em"></mspace><mo>,</mo><msub><mi>ϵ</mi><mi>n</mi></msub><mo>∼</mo><mtext mathvariant="normal">Normal</mtext><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mi>σ</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">y_n = \alpha + \beta x_n + \epsilon_n \qquad , \epsilon_n \sim \textrm{Normal}(0,\sigma)</annotation></semantics></math></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model_string &lt;-<span class="st"> &quot;</span>
+<span class="st">data {</span>
+<span class="st">  int&lt;lower=0&gt; N;</span>
+<span class="st">  vector[N] y;</span>
+<span class="st">  vector[N] x;</span>
+<span class="st">}</span>
+<span class="st">transformed data {</span>
+<span class="st">  vector[N] ylog;</span>
+<span class="st">  ylog &lt;- log(y);</span>
+<span class="st">}</span>
+<span class="st">parameters {</span>
+<span class="st">  real alpha;</span>
+<span class="st">  real beta;</span>
+<span class="st">  real&lt;lower=0&gt; sigma;</span>
+<span class="st">}</span>
+<span class="st">model{</span>
+<span class="st">  ylog ~ normal(alpha + beta * x, sigma);</span>
+<span class="st">}&quot;</span></code></pre></div>
+<p>the vectorized model is the same as the more explicit loop</p>
+<pre><code>  for (n in 1:N)
+    y[n] ~ normal(alpha + beta * x[n], sigma);</code></pre>
+</div>
+<div id="pop-quiz" class="slide section level1">
+<h1>Pop Quiz</h1>
+<p>What is the distribution of <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>β</mi><annotation encoding="application/x-tex">\beta</annotation></semantics></math>?</p>
+</div>
+<div id="running-the-model" class="slide section level1">
+<h1>Running the model</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_string, <span class="dt">data=</span>data, 
+            <span class="dt">pars=</span><span class="kw">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;sigma&quot;</span>), 
+            <span class="dt">chains=</span><span class="dv">3</span>, <span class="dt">iter=</span><span class="dv">500</span>)</code></pre></div>
+<pre><code>COMPILING THE C++ CODE FOR MODEL &#39;model_string&#39; NOW.
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 1).
+
+Chain 1, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 1, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 1, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 1, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 1, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 1, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 1, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 1, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 1, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 1, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 1, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 1, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.021228 seconds (Warm-up)
+#                0.020529 seconds (Sampling)
+#                0.041757 seconds (Total)
+
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 2).
+
+Chain 2, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 2, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 2, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 2, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 2, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 2, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 2, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 2, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 2, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 2, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 2, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 2, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.024614 seconds (Warm-up)
+#                0.022027 seconds (Sampling)
+#                0.046641 seconds (Total)
+
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 3).
+
+Chain 3, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 3, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 3, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 3, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 3, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 3, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 3, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 3, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 3, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 3, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 3, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 3, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.028866 seconds (Warm-up)
+#                0.022698 seconds (Sampling)
+#                0.051564 seconds (Total)</code></pre>
+</div>
+<div id="output" class="slide section level1">
+<h1>Output</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(fit, <span class="dt">probs=</span><span class="kw">c</span>(<span class="fl">0.025</span>,<span class="fl">0.5</span>,<span class="fl">0.975</span>))</code></pre></div>
+<pre><code>Inference for Stan model: model_string.
+3 chains, each with iter=500; warmup=250; thin=1; 
+post-warmup draws per chain=250, total post-warmup draws=750.
+
+        mean se_mean   sd   2.5%    50%  97.5% n_eff Rhat
+alpha   0.61    0.01 0.14   0.33   0.62   0.87   180 1.01
+beta    0.46    0.01 0.16   0.17   0.45   0.79   185 1.01
+sigma   0.83    0.00 0.04   0.75   0.83   0.92   268 1.01
+lp__  -64.08    0.11 1.34 -67.66 -63.73 -62.61   154 1.00
+
+Samples were drawn using NUTS(diag_e) at Wed Apr 20 22:10:43 2016.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).</code></pre>
+</div>
+<div id="traceplot" class="slide section level1">
+<h1>Traceplot</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">traceplot</span>(fit, <span class="dt">pars=</span><span class="kw">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;sigma&quot;</span>), <span class="dt">window=</span><span class="kw">c</span>(<span class="dv">50</span>,<span class="dv">500</span>))</code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-14-1.png" />
+
+</div>
+</div>
+<div id="correlation-matrix" class="slide section level1">
+<h1>Correlation Matrix</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">pairs</span>(fit, <span class="dt">pars=</span><span class="kw">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;sigma&quot;</span>))</code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-15-1.png" />
+
+</div>
+</div>
+<div id="diagnostics" class="slide section level1">
+<h1>Diagnostics</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">get_sampler_params</span>(fit)[[<span class="dv">1</span>]][,<span class="dv">2</span>], <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">ylab=</span><span class="st">&#39;stepsize&#39;</span>)</code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-16-1.png" />
+
+</div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_sampler_params</span>(fit)[[<span class="dv">1</span>]][<span class="dv">245</span>:<span class="dv">255</span>,]</code></pre></div>
+<pre><code>      accept_stat__ stepsize__ treedepth__ n_leapfrog__ n_divergent__
+ [1,]   0.215409358  0.6795622           2            3             0
+ [2,]   0.940335877  0.1669584           3            7             0
+ [3,]   0.997952450  0.2421507           3            7             0
+ [4,]   1.000000000  0.4012850           1            1             0
+ [5,]   0.002458872  0.6635630           1            1             0
+ [6,]   0.996209609  0.1021665           5           31             0
+ [7,]   0.775731648  0.3257149           3            5             0
+ [8,]   1.000000000  0.3257149           2            3             0
+ [9,]   0.998846767  0.3257149           4           15             0
+[10,]   0.811089357  0.3257149           2            3             0
+[11,]   0.996502162  0.3257149           4           15             0</code></pre>
+</div>
+<div id="bayesian-linear-regression-complete-pooling-1" class="slide section level1">
+<h1>Bayesian linear regression: complete pooling</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s &lt;-<span class="st"> </span><span class="kw">extract</span>(fit) <span class="co"># samples</span>
+
+<span class="kw">set.seed</span>(<span class="dv">1</span>)
+<span class="kw">ggplot</span>(t, <span class="kw">aes</span>(floor, <span class="kw">log</span>(activity))) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">width=</span><span class="fl">0.1</span>)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~county, <span class="dt">ncol=</span><span class="dv">4</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks =</span> <span class="kw">c</span>(-<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">3</span>)) +
+<span class="st">    </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="kw">mean</span>(s$a), <span class="dt">slope=</span><span class="kw">mean</span>(s$b), <span class="dt">color=</span><span class="st">&#39;red&#39;</span>)</code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-17-1.png" />
+
+</div>
+</div>
+<div id="bayesian-linear-regression-no-pooling" class="slide section level1">
+<h1>Bayesian linear regression: no pooling</h1>
+<p>Model definition</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model_string &lt;-<span class="st"> &quot;</span>
+<span class="st">data {</span>
+<span class="st">  int&lt;lower=0&gt; N;</span>
+<span class="st">  int&lt;lower=0&gt; J;          // ++ number of counties</span>
+<span class="st">  vector[N] y;</span>
+<span class="st">  vector[N] x;</span>
+<span class="st">  int&lt;lower=0&gt; county[N];  // ++ county</span>
+<span class="st">}</span>
+<span class="st">transformed data {</span>
+<span class="st">  vector[N] ylog;</span>
+<span class="st">  ylog &lt;- log(y);</span>
+<span class="st">}</span>
+<span class="st">parameters {</span>
+<span class="st">  real alpha[J];           // ++ random effec</span>
+<span class="st">  real beta;</span>
+<span class="st">  real&lt;lower=0&gt; sigma;</span>
+<span class="st">}</span>
+<span class="st">model{</span>
+<span class="st">  for (n in 1:N)           // vv county indicator</span>
+<span class="st">    ylog[n] ~ normal(alpha[county[n]] + beta * x[n], sigma);</span>
+<span class="st">}&quot;</span>
+
+fit.nopool &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_string, <span class="dt">data=</span>data, <span class="dt">pars=</span><span class="kw">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;sigma&quot;</span>), <span class="dt">chains=</span><span class="dv">3</span>, <span class="dt">iter=</span><span class="dv">500</span>)</code></pre></div>
+<pre><code>COMPILING THE C++ CODE FOR MODEL &#39;model_string&#39; NOW.
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 1).
+
+Chain 1, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 1, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 1, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 1, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 1, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 1, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 1, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 1, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 1, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 1, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 1, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 1, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.079405 seconds (Warm-up)
+#                0.051515 seconds (Sampling)
+#                0.13092 seconds (Total)
+
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 2).
+
+Chain 2, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 2, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 2, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 2, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 2, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 2, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 2, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 2, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 2, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 2, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 2, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 2, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.083076 seconds (Warm-up)
+#                0.052725 seconds (Sampling)
+#                0.135801 seconds (Total)
+
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 3).
+
+Chain 3, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 3, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 3, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 3, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 3, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 3, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 3, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 3, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 3, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 3, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 3, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 3, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.067091 seconds (Warm-up)
+#                0.048676 seconds (Sampling)
+#                0.115767 seconds (Total)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(fit.nopool, <span class="dt">probs=</span><span class="kw">c</span>(<span class="fl">0.025</span>,<span class="fl">0.5</span>,<span class="fl">0.975</span>))</code></pre></div>
+<pre><code>Inference for Stan model: model_string.
+3 chains, each with iter=500; warmup=250; thin=1; 
+post-warmup draws per chain=250, total post-warmup draws=750.
+
+           mean se_mean   sd   2.5%    50%  97.5% n_eff Rhat
+alpha[1]   2.33    0.02 0.51   1.35   2.32   3.30   528    1
+alpha[2]   0.28    0.02 0.40  -0.50   0.29   1.05   553    1
+alpha[3]   0.19    0.01 0.30  -0.31   0.17   0.81   454    1
+alpha[4]   1.19    0.01 0.28   0.67   1.18   1.78   453    1
+alpha[5]   1.40    0.01 0.23   0.95   1.41   1.85   426    1
+alpha[6]   0.93    0.01 0.19   0.52   0.93   1.30   375    1
+alpha[7]   0.61    0.01 0.19   0.26   0.62   1.00   355    1
+alpha[8]   0.32    0.01 0.15   0.03   0.32   0.62   345    1
+beta       0.53    0.01 0.15   0.22   0.53   0.82   296    1
+sigma      0.74    0.00 0.04   0.67   0.74   0.82   430    1
+lp__     -41.04    0.13 2.37 -46.38 -40.78 -37.49   344    1
+
+Samples were drawn using NUTS(diag_e) at Wed Apr 20 22:11:02 2016.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).</code></pre>
+</div>
+<div id="bayesian-linear-regression-no-pooling-1" class="slide section level1">
+<h1>Bayesian linear regression: no pooling</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s.nopool &lt;-<span class="st"> </span><span class="kw">extract</span>(fit.nopool) <span class="co"># samples</span>
+pred$alpha &lt;-<span class="st"> </span><span class="kw">apply</span>(s.nopool[[<span class="st">&#39;alpha&#39;</span>]], <span class="dv">2</span>, mean)
+pred$beta  &lt;-<span class="st"> </span><span class="kw">mean</span>(s.nopool[[<span class="st">&#39;beta&#39;</span>]])
+pred &lt;-<span class="st"> </span>pred %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">bayes.nopool =</span> alpha +<span class="st"> </span>beta*floor)
+
+<span class="kw">set.seed</span>(<span class="dv">1</span>)
+<span class="kw">ggplot</span>(t, <span class="kw">aes</span>(floor, <span class="kw">log</span>(activity))) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">width=</span><span class="fl">0.1</span>)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~county, <span class="dt">ncol=</span><span class="dv">4</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks =</span> <span class="kw">c</span>(-<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">3</span>)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data=</span>pred, <span class="kw">aes</span>(floor, bayes.nopool), <span class="dt">color=</span><span class="st">&#39;blue&#39;</span>) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data=</span>pred, <span class="kw">aes</span>(floor, fit.nopool), <span class="dt">color=</span><span class="st">&#39;red&#39;</span>, <span class="dt">linetype=</span><span class="st">&quot;dashed&quot;</span>) </code></pre></div>
+<div class="figure">
+<img src="figure/unnamed-chunk-19-1.png" />
+
+</div>
+</div>
+<div id="bayesian-linear-regression-partial-pooling" class="slide section level1">
+<h1>Bayesian linear regression: partial pooling</h1>
+<p>Model definition</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model_string &lt;-<span class="st"> &quot;</span>
+<span class="st">data {</span>
+<span class="st">  int&lt;lower=0&gt; N;</span>
+<span class="st">  int&lt;lower=0&gt; J;</span>
+<span class="st">  vector[N] y;</span>
+<span class="st">  vector[N] x;</span>
+<span class="st">  int&lt;lower=0&gt; county[N];</span>
+<span class="st">}</span>
+<span class="st">transformed data {</span>
+<span class="st">  vector[N] ylog;</span>
+<span class="st">  ylog &lt;- log(y);</span>
+<span class="st">}</span>
+<span class="st">parameters {</span>
+<span class="st">  real alpha[J];</span>
+<span class="st">  real beta;</span>
+<span class="st">  real&lt;lower=0&gt; sigma;</span>
+<span class="st">  real mu;                          // ++ hyper prior</span>
+<span class="st">  real&lt;lower=0&gt; sigma_mu;           // ++ hyper prior</span>
+<span class="st">}</span>
+<span class="st">model{</span>
+<span class="st">  mu ~ normal(0, 100);              // ++ hyper prior</span>
+<span class="st">  sigma_mu ~ cauchy(0,5);           // ++ hyper prior</span>
+
+<span class="st">  sigma ~ cauchy(0,5);              // ++ prior</span>
+<span class="st">  for (j in 1:J)                    // ++ prior</span>
+<span class="st">    alpha[j] ~ normal(mu,sigma_mu); // ++ prior</span>
+
+<span class="st">  for (n in 1:N)</span>
+<span class="st">    ylog[n] ~ normal(alpha[county[n]] + beta * x[n], sigma);</span>
+<span class="st">  </span>
+<span class="st">}&quot;</span>
+
+fit.partpool &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_string, <span class="dt">data=</span>data, <span class="dt">pars=</span><span class="kw">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;sigma&quot;</span>), <span class="dt">chains=</span><span class="dv">3</span>, <span class="dt">iter=</span><span class="dv">500</span>)</code></pre></div>
+<pre><code>COMPILING THE C++ CODE FOR MODEL &#39;model_string&#39; NOW.
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 1).
+
+Chain 1, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 1, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 1, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 1, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 1, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 1, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 1, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 1, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 1, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 1, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 1, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 1, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.07958 seconds (Warm-up)
+#                0.060445 seconds (Sampling)
+#                0.140025 seconds (Total)
+
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 2).
+
+Chain 2, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 2, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 2, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 2, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 2, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 2, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 2, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 2, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 2, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 2, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 2, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 2, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.080551 seconds (Warm-up)
+#                0.053712 seconds (Sampling)
+#                0.134263 seconds (Total)
+
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 3).
+
+Chain 3, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 3, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 3, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 3, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 3, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 3, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 3, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 3, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 3, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 3, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 3, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 3, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.065033 seconds (Warm-up)
+#                0.03887 seconds (Sampling)
+#                0.103903 seconds (Total)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(fit.partpool, <span class="dt">probs=</span><span class="kw">c</span>(<span class="fl">0.025</span>,<span class="fl">0.5</span>,<span class="fl">0.975</span>))</code></pre></div>
+<pre><code>Inference for Stan model: model_string.
+3 chains, each with iter=500; warmup=250; thin=1; 
+post-warmup draws per chain=250, total post-warmup draws=750.
+
+           mean se_mean   sd   2.5%    50%  97.5% n_eff Rhat
+alpha[1]   1.73    0.03 0.50   0.80   1.71   2.79   370 1.00
+alpha[2]   0.41    0.02 0.35  -0.30   0.43   1.05   363 1.01
+alpha[3]   0.30    0.01 0.28  -0.29   0.32   0.85   533 1.00
+alpha[4]   1.15    0.01 0.27   0.67   1.15   1.70   410 1.00
+alpha[5]   1.35    0.01 0.23   0.89   1.35   1.78   372 1.00
+alpha[6]   0.93    0.01 0.19   0.56   0.93   1.28   272 1.00
+alpha[7]   0.63    0.01 0.18   0.28   0.63   0.96   267 1.00
+alpha[8]   0.32    0.01 0.14   0.05   0.32   0.59   212 1.00
+beta       0.52    0.01 0.14   0.25   0.52   0.81   205 1.00
+sigma      0.74    0.00 0.04   0.67   0.74   0.81   585 1.00
+lp__     -42.10    0.18 2.66 -47.93 -41.72 -37.96   219 1.01
+
+Samples were drawn using NUTS(diag_e) at Wed Apr 20 22:11:20 2016.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).</code></pre>
+</div>
+<div id="bayesian-linear-regression-partial-pooling-1" class="slide section level1">
+<h1>Bayesian linear regression: partial pooling</h1>
+<div class="figure">
+<img src="figure/unnamed-chunk-21-1.png" />
+
+</div>
+</div>
+<div id="why-bayes" class="slide section level1">
+<h1>Why Bayes?</h1>
+<p>Robust Noise Models, e.g. noise term as a Student-t distribution</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data {
+  real&lt;lower=<span class="dv">0</span>&gt;<span class="st"> </span>nu;
+  ...
+}
+...
+model {
+  for (n in <span class="dv">1</span>:N)
+    y[n] ~<span class="st"> </span><span class="kw">student_t</span>(nu, alpha +<span class="st"> </span>beta *<span class="st"> </span>x[n], sigma);
+  ...
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  ylog[n] ~<span class="st"> </span><span class="kw">normal</span>(alpha[county[n]] +<span class="st"> </span>beta *<span class="st"> </span>x[n], sigma);</code></pre></div>
+</div>
+<div id="why-bayes-1" class="slide section level1">
+<h1>Why Bayes?</h1>
+<p>Extensibility</p>
+<div class="figure">
+<img src="http://4.bp.blogspot.com/-aS610FQGfL0/UlWppYDDV7I/AAAAAAAAArg/zv79uqeZsdU/s1600/BayesDiagramComparison-rats-DBDA.png" alt="It&#39;s natural to add levels of hierachy and constraints" />
+<p class="caption">It's natural to add levels of hierachy and constraints</p>
+</div>
+</div>
+<div id="censoring" class="slide section level1">
+<h1>Censoring</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model_string &lt;-<span class="st"> &quot;</span>
+<span class="st">data {</span>
+<span class="st">  int&lt;lower=0&gt; N;</span>
+<span class="st">  int&lt;lower=0&gt; N_cens;</span>
+<span class="st">  vector[N] y;</span>
+<span class="st">  vector[N] x;</span>
+<span class="st">  vector[N_cens] x_cens;</span>
+<span class="st">  real&lt;lower=max(y)&gt; U;</span>
+<span class="st">}</span>
+<span class="st">parameters {</span>
+<span class="st">  real alpha;</span>
+<span class="st">  real beta;</span>
+<span class="st">  real&lt;lower=0&gt; sigma;</span>
+<span class="st">  vector&lt;lower=U&gt;[N_cens] y_cens;</span>
+<span class="st">}</span>
+<span class="st">model{</span>
+<span class="st">  y      ~ normal(alpha + beta * x,      sigma);</span>
+<span class="st">  y_cens ~ normal(alpha + beta * x_cens, sigma);</span>
+<span class="st">}&quot;</span>
+
+U &lt;-<span class="st"> </span><span class="dv">2</span>
+t$censor &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">log</span>(t$activity) &gt;<span class="st"> </span>U)
+tc &lt;-<span class="st"> </span>t %&gt;%<span class="st"> </span><span class="kw">filter</span>(censor==<span class="dv">0</span>)
+data.censor &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N=</span><span class="kw">sum</span>(<span class="dv">1</span>-t$censor), <span class="dt">N_cens=</span><span class="kw">sum</span>(t$censor), <span class="dt">x=</span>tc$floor, <span class="dt">y=</span><span class="kw">log</span>(tc$activity), <span class="dt">x_cens=</span>t[t$censor==<span class="dv">1</span>,]$floor, <span class="dt">U=</span>U, <span class="dt">censor=</span>tc$censor)
+
+fit.censor &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code=</span>model_string, <span class="dt">data=</span>data.censor, <span class="dt">pars=</span><span class="kw">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;sigma&quot;</span>), <span class="dt">chains=</span><span class="dv">3</span>, <span class="dt">iter=</span><span class="dv">500</span>)</code></pre></div>
+<pre><code>COMPILING THE C++ CODE FOR MODEL &#39;model_string&#39; NOW.
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 1).
+
+Chain 1, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 1, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 1, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 1, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 1, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 1, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 1, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 1, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 1, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 1, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 1, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 1, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.207793 seconds (Warm-up)
+#                0.057627 seconds (Sampling)
+#                0.26542 seconds (Total)
+
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 2).
+
+Chain 2, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 2, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 2, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 2, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 2, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 2, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 2, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 2, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 2, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 2, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 2, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 2, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.206245 seconds (Warm-up)
+#                0.049896 seconds (Sampling)
+#                0.256141 seconds (Total)
+
+
+SAMPLING FOR MODEL &#39;model_string&#39; NOW (CHAIN 3).
+
+Chain 3, Iteration:   1 / 500 [  0%]  (Warmup)
+Chain 3, Iteration:  50 / 500 [ 10%]  (Warmup)
+Chain 3, Iteration: 100 / 500 [ 20%]  (Warmup)
+Chain 3, Iteration: 150 / 500 [ 30%]  (Warmup)
+Chain 3, Iteration: 200 / 500 [ 40%]  (Warmup)
+Chain 3, Iteration: 250 / 500 [ 50%]  (Warmup)
+Chain 3, Iteration: 251 / 500 [ 50%]  (Sampling)
+Chain 3, Iteration: 300 / 500 [ 60%]  (Sampling)
+Chain 3, Iteration: 350 / 500 [ 70%]  (Sampling)
+Chain 3, Iteration: 400 / 500 [ 80%]  (Sampling)
+Chain 3, Iteration: 450 / 500 [ 90%]  (Sampling)
+Chain 3, Iteration: 500 / 500 [100%]  (Sampling)
+#  Elapsed Time: 0.195814 seconds (Warm-up)
+#                0.055355 seconds (Sampling)
+#                0.251169 seconds (Total)</code></pre>
+</div>
+<div id="censoring-1" class="slide section level1">
+<h1>Censoring</h1>
+<div class="figure">
+<img src="figure/unnamed-chunk-25-1.png" />
+
+</div>
+<p>truth in <font color="blue">blue</font>, without censored values in <font color="red">red</font>, and censor model in <font color="green">green</font></p>
+</div>
+<div id="books" class="slide section level1">
+<h1>Books</h1>
+<p>Stan: <a href="http://mc-stan.org" class="uri">http://mc-stan.org</a></p>
+<p> </p>
+<div class="figure">
+<img src="http://ecx.images-amazon.com/images/I/51Jt%2BWN9MqL._SX406_BO1,204,203,200_.jpg" alt="Doing Bayesian Data Analysis, by Kruschke" />
+<p class="caption">Doing Bayesian Data Analysis, by Kruschke</p>
+</div>
+<p> </p>
+<div class="figure">
+<img src="http://ecx.images-amazon.com/images/I/51mTTnd%2B7mL._SX325_BO1,204,203,200_.jpg" alt="Bayesian Data Analysis, by Gelman" />
+<p class="caption">Bayesian Data Analysis, by Gelman</p>
+</div>
+</div>
+</body>
+</html>

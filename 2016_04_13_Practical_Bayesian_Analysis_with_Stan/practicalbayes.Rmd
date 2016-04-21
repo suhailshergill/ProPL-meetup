@@ -1,0 +1,470 @@
+---
+title       : Practical Bayesian Analysis (with Stan)
+author      : Jan Scholz, Sr. Data Scientist at Architech
+date        : 2016-04-11
+---
+
+# Intro
+
+Lecture on Bayesian Analysis held at the [Toronto Probabilistic Programming Meetup](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/) at [Architech](http://www.architech.ca/), Toronto, 13 April 2016.
+
+
+# Multilevel Models
+
+![Data Analysis Using Regression and Multilevel/Hierachical Models by Andrew Gelman and Jennifer Hill](http://www.stat.columbia.edu/~gelman/arm/cover.gif)
+
+
+# Radon Levels
+
+Download ...
+
+```bash
+wget http://www.stat.columbia.edu/~gelman/arm/examples/ARM_Data.zip
+unzip ARM_Data.zip
+```
+
+... and read data into R
+
+```{r echo=TRUE, message=FALSE, comment='', tidy=TRUE, cache=TRUE}
+library(dplyr)
+library(ggplot2)
+
+t.orig <- read.csv('ARM_Data/radon/srrs2.dat', strip.white=TRUE)
+sel <- c('LAC QUI PARLE', 'AITKIN', 'KOOCHICHING', 'DOUGLAS', 'CLAY', 'STEARNS', 'RAMSEY', 'ST LOUIS')
+```
+
+# Radon Levels
+
+Massage the data
+
+```{r echo=TRUE, comment='', tidy=FALSE, cache=TRUE}
+t <- t.orig %>% 
+    filter(state=='MN' & county %in% sel) %>% 
+    droplevels() %>%
+    select(state, county, basement, floor, activity) %>% 
+    group_by(county) %>% mutate(n=n()) %>% 
+    ungroup() %>% 
+    arrange(n, county) %>% 
+    mutate(floor=1-floor)
+
+t <- within(t, county <- reorder(county, n))
+t
+```
+
+
+# Radon Levels
+
+```{r fig.cap="log radon levels depend on floor", echo=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=4, fig.width=8, cache=TRUE}
+set.seed(1)
+ggplot(t, aes(floor, log(activity))) +
+    geom_point(position = position_jitter(width=0.1)) +
+    facet_wrap(~county, ncol=4) +
+    scale_x_continuous(breaks = c(0,1)) + 
+    scale_y_continuous(breaks = c(-1,1,3))
+```
+
+
+# Complete Pooling
+
+$$y = \alpha + \beta x$$
+
+$$\log(\textrm{activity}) = \alpha + \beta \cdot \textrm{floor}$$
+
+```{r echo=TRUE, comment='', tidy=FALSE, cache=TRUE}
+lm.pool <- lm(log(activity) ~ floor, data=t)
+pred <- expand.grid(county=levels(t$county), floor=0:1)
+pred$fit.pool <- predict(lm.pool, pred)
+```
+
+
+# Complete Pooling
+
+```{r fig.cap="log radon levels depend on floor", echo=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=4, fig.width=8, cache=TRUE}
+set.seed(1)
+ggplot(t, aes(floor, log(activity))) + geom_point(position = position_jitter(width=0.1)) + facet_wrap(~county, ncol=4) + scale_x_continuous(breaks = c(0,1)) + scale_y_continuous(breaks = c(-1,1,3)) + geom_line(data=pred, aes(floor, fit.pool), color='red')
+```
+
+
+# No-Pooling: separate intercepts
+
+$$y = \alpha_j + \beta x, \qquad j=1..J$$
+
+with $J$ unique counties
+
+
+```{r echo=TRUE, message=FALSE, comment='', tidy=FALSE, cache=TRUE}
+lm.nopool <- lm(log(activity) ~ floor + county - 1, data=t)
+pred$fit.nopool <- predict(lm.nopool, pred)
+```
+
+```{r fig.cap='', echo=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=4, fig.width=8, cache=TRUE}
+set.seed(1)
+ggplot(t, aes(floor, log(activity))) + 
+    geom_point(position = position_jitter(width=0.1)) + 
+    facet_wrap(~county, ncol=4) + 
+    scale_x_continuous(breaks = c(0,1)) + 
+    scale_y_continuous(breaks = c(-1,1,3)) +
+    geom_line(data=pred, aes(floor, fit.pool), color='red') + 
+    geom_line(data=pred, aes(floor, fit.nopool), color='blue')
+```
+
+complete pooling in <font color="red">red</font>, no pooling in <font color="blue">blue</font>
+
+
+# Partial Pooling: separate intercepts
+
+```{r echo=TRUE, message=FALSE, comment='', tidy=FALSE, cache=TRUE}
+library(lme4)
+lmer.partpool <- lmer(log(activity) ~ floor + (1|county), data=t)
+pred$fit.partpool <- predict(lmer.partpool, pred)
+```
+
+
+```{r fig.cap='', echo=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=4, fig.width=8, cache=TRUE}
+set.seed(1)
+ggplot(t, aes(floor, log(activity))) + 
+    geom_point(position = position_jitter(width=0.1)) + 
+    facet_wrap(~county, ncol=4) + 
+    scale_x_continuous(breaks = c(0,1)) + 
+    scale_y_continuous(breaks = c(-1,1,3)) +
+    geom_line(data=pred, aes(floor, fit.pool), color='red') + 
+    geom_line(data=pred, aes(floor, fit.partpool), color='black') + 
+    geom_line(data=pred, aes(floor, fit.nopool), color='blue')
+```
+
+complete pooling in <font color="red">red</font>, partial pooling in black, no pooling in <font color="blue">blue</font>
+
+
+<!-- ---------------------------------------------------------------------- -->
+
+# Stan setup
+
+Stan is an imperative probabilistic programming language, developed for statistical inference.
+
+Stan is a probabilistic programming language in the sense that a random variable is a bona fide first-class object. Observed random variables are declared as data and unobserved random variables are declared as parameters.
+
+For continuous parameters, Stan uses Hamiltonian Monte Carlo (HMC) sampling, a form of Markov chain Monte Carlo (MCMC) sampling. Stan does not provide discrete sampling for parameters. Discrete observations can be handled directly, but discrete parameters must be marginalized out of the model.
+
+
+```{r echo=TRUE, message=FALSE, comment='', tidy=FALSE, cache=TRUE}
+library(rstan)
+
+# For local, multicore CPU with excess RAM
+#rstan_options(auto_write = TRUE)
+#options(mc.cores = parallel::detectCores())
+
+# data for stan
+data <- list(N=nrow(t), J=nlevels(t$county), 
+             county=as.numeric(t$county), x=t$floor, y=t$activity)
+
+
+```
+
+# Bayesian linear regression: complete pooling
+
+$$y_n = \alpha + \beta x_n + \epsilon_n \qquad , \epsilon_n \sim \textrm{Normal}(0,\sigma)$$
+
+```{r echo=TRUE, message=FALSE, comment='', tidy=FALSE, cache=TRUE}
+model_string <- "
+data {
+  int<lower=0> N;
+  vector[N] y;
+  vector[N] x;
+}
+transformed data {
+  vector[N] ylog;
+  ylog <- log(y);
+}
+parameters {
+  real alpha;
+  real beta;
+  real<lower=0> sigma;
+}
+model{
+  ylog ~ normal(alpha + beta * x, sigma);
+}"
+```
+
+the vectorized model is the same as the more explicit loop
+
+```
+  for (n in 1:N)
+    y[n] ~ normal(alpha + beta * x[n], sigma);
+```
+
+
+# Pop Quiz
+
+What is the distribution of $\alpha$, $\beta$?
+
+
+# Running the model
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, comment='', tidy=FALSE, cache=TRUE}
+fit <- stan(model_code=model_string, data=data, 
+            pars=c("alpha", "beta", "sigma"), 
+            chains=3, iter=500)
+```
+
+
+# Output
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, comment='', tidy=FALSE, cache=TRUE}
+print(fit, probs=c(0.025,0.5,0.975))
+```
+
+
+# Traceplot
+
+```{r fig.cap='', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=4, fig.width=8, cache=TRUE}
+traceplot(fit, pars=c("alpha", "beta", "sigma"), window=c(50,500))
+```
+
+
+# Correlation Matrix
+
+```{r fig.cap='', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=6, fig.width=7, cache=TRUE}
+pairs(fit, pars=c("alpha", "beta", "sigma"))
+```
+
+
+# Diagnostics
+
+```{r fig.cap='', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=3, fig.width=6, cache=TRUE}
+
+plot(get_sampler_params(fit)[[1]][,2], ylim=c(0,1), ylab='stepsize')
+
+get_sampler_params(fit)[[1]][245:255,]
+```
+
+
+# Bayesian linear regression: complete pooling
+
+```{r fig.cap='', echo=TRUE, message=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=4, fig.width=8, cache=TRUE}
+s <- extract(fit) # samples
+
+set.seed(1)
+ggplot(t, aes(floor, log(activity))) + 
+    geom_point(position = position_jitter(width=0.1)) + 
+    facet_wrap(~county, ncol=4) + 
+    scale_x_continuous(breaks = c(0,1)) + 
+    scale_y_continuous(breaks = c(-1,1,3)) +
+    geom_abline(intercept=mean(s$a), slope=mean(s$b), color='red')
+
+```
+
+
+# Bayesian linear regression: no pooling
+
+Model definition
+
+```{r echo=TRUE, message=FALSE, comment='', tidy=FALSE, cache=TRUE}
+model_string <- "
+data {
+  int<lower=0> N;
+  int<lower=0> J;          // ++ number of counties
+  vector[N] y;
+  vector[N] x;
+  int<lower=0> county[N];  // ++ county
+}
+transformed data {
+  vector[N] ylog;
+  ylog <- log(y);
+}
+parameters {
+  real alpha[J];           // ++ random effec
+  real beta;
+  real<lower=0> sigma;
+}
+model{
+  for (n in 1:N)           // vv county indicator
+    ylog[n] ~ normal(alpha[county[n]] + beta * x[n], sigma);
+}"
+
+fit.nopool <- stan(model_code=model_string, data=data, pars=c("alpha", "beta", "sigma"), chains=3, iter=500)
+
+print(fit.nopool, probs=c(0.025,0.5,0.975))
+```
+
+
+# Bayesian linear regression: no pooling
+
+```{r fig.cap='', echo=TRUE, message=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=4, fig.width=8, cache=TRUE}
+s.nopool <- extract(fit.nopool) # samples
+pred$alpha <- apply(s.nopool[['alpha']], 2, mean)
+pred$beta  <- mean(s.nopool[['beta']])
+pred <- pred %>% 
+    mutate(bayes.nopool = alpha + beta*floor)
+
+set.seed(1)
+ggplot(t, aes(floor, log(activity))) + 
+    geom_point(position = position_jitter(width=0.1)) + 
+    facet_wrap(~county, ncol=4) + 
+    scale_x_continuous(breaks = c(0,1)) + 
+    scale_y_continuous(breaks = c(-1,1,3)) +
+    geom_line(data=pred, aes(floor, bayes.nopool), color='blue') +
+    geom_line(data=pred, aes(floor, fit.nopool), color='red', linetype="dashed") 
+```
+
+
+# Bayesian linear regression: partial pooling
+
+Model definition
+
+```{r echo=TRUE, message=FALSE, comment='', tidy=FALSE, cache=TRUE}
+model_string <- "
+data {
+  int<lower=0> N;
+  int<lower=0> J;
+  vector[N] y;
+  vector[N] x;
+  int<lower=0> county[N];
+}
+transformed data {
+  vector[N] ylog;
+  ylog <- log(y);
+}
+parameters {
+  real alpha[J];
+  real beta;
+  real<lower=0> sigma;
+  real mu;                          // ++ hyper prior
+  real<lower=0> sigma_mu;           // ++ hyper prior
+}
+model{
+  mu ~ normal(0, 100);              // ++ hyper prior
+  sigma_mu ~ cauchy(0,5);           // ++ hyper prior
+
+  sigma ~ cauchy(0,5);              // ++ prior
+  for (j in 1:J)                    // ++ prior
+    alpha[j] ~ normal(mu,sigma_mu); // ++ prior
+
+  for (n in 1:N)
+    ylog[n] ~ normal(alpha[county[n]] + beta * x[n], sigma);
+  
+}"
+
+fit.partpool <- stan(model_code=model_string, data=data, pars=c("alpha", "beta", "sigma"), chains=3, iter=500)
+
+print(fit.partpool, probs=c(0.025,0.5,0.975))
+```
+
+
+# Bayesian linear regression: partial pooling
+
+```{r fig.cap='', echo=FALSE, message=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=4, fig.width=8, cache=TRUE}
+s.partpool <- extract(fit.partpool) # samples
+pred$alpha <- apply(s.partpool[['alpha']], 2, mean)
+pred$beta  <- mean(s.partpool[['beta']])
+pred <- pred %>% 
+    mutate(bayes.partpool = alpha + beta*floor)
+
+set.seed(1)
+ggplot(t, aes(floor, log(activity))) + 
+    geom_point(position = position_jitter(width=0.1)) + 
+    facet_wrap(~county, ncol=4) + 
+    scale_x_continuous(breaks = c(0,1)) + 
+    scale_y_continuous(breaks = c(-1,1,3)) +
+    geom_line(data=pred, aes(floor, fit.pool), color='red', linetype="dashed") +
+    geom_line(data=pred, aes(floor, bayes.nopool), color='blue') +
+    geom_line(data=pred, aes(floor, bayes.partpool), color='black')
+
+```
+
+
+# Why Bayes?
+
+Robust Noise Models, e.g. noise term as a Student-t distribution
+
+```{r eval=FALSE, echo=TRUE, message=FALSE, comment='', tidy=FALSE, cache=TRUE}
+data {
+  real<lower=0> nu;
+  ...
+}
+...
+model {
+  for (n in 1:N)
+    y[n] ~ student_t(nu, alpha + beta * x[n], sigma);
+  ...
+}
+```
+
+
+```{r eval=FALSE, cache=TRUE}
+  ylog[n] ~ normal(alpha[county[n]] + beta * x[n], sigma);
+```
+
+# Why Bayes?
+
+Extensibility
+
+![It's natural to add levels of hierachy and constraints](http://4.bp.blogspot.com/-aS610FQGfL0/UlWppYDDV7I/AAAAAAAAArg/zv79uqeZsdU/s1600/BayesDiagramComparison-rats-DBDA.png)
+
+
+# Censoring
+
+```{r echo=TRUE, message=FALSE, comment='', tidy=FALSE, cache=TRUE}
+model_string <- "
+data {
+  int<lower=0> N;
+  int<lower=0> N_cens;
+  vector[N] y;
+  vector[N] x;
+  vector[N_cens] x_cens;
+  real<lower=max(y)> U;
+}
+parameters {
+  real alpha;
+  real beta;
+  real<lower=0> sigma;
+  vector<lower=U>[N_cens] y_cens;
+}
+model{
+  y      ~ normal(alpha + beta * x,      sigma);
+  y_cens ~ normal(alpha + beta * x_cens, sigma);
+}"
+
+U <- 2
+t$censor <- as.numeric(log(t$activity) > U)
+tc <- t %>% filter(censor==0)
+data.censor <- list(N=sum(1-t$censor), N_cens=sum(t$censor), x=tc$floor, y=log(tc$activity), x_cens=t[t$censor==1,]$floor, U=U, censor=tc$censor)
+
+fit.censor <- stan(model_code=model_string, data=data.censor, pars=c("alpha", "beta", "sigma"), chains=3, iter=500)
+```
+
+
+# Censoring
+
+```{r fig.cap='', echo=FALSE, message=FALSE, comment='', tidy=FALSE, dpi=90, fig.height=6, fig.width=8, cache=TRUE}
+s <- extract(fit.censor) # samples
+
+t$activity.censor <- ifelse(t$censor, NA, t$activity)
+l.censor <- lm(log(activity.censor) ~ floor, t)
+l        <- lm(log(activity) ~ floor, t)
+
+set.seed(1)
+ggplot(t, aes(x=floor, y=log(activity))) + 
+    geom_point(aes(color=factor(censor)), position = position_jitter(width=0.1)) + 
+    scale_x_continuous(breaks = c(0,1)) + 
+    scale_y_continuous(breaks = c(-1,1,3)) +
+    geom_abline(intercept=l$coefficients[1], slope=l$coefficients[2], linetype="dashed", color='blue') +
+    geom_abline(intercept=l.censor$coefficients[1], slope=l.censor$coefficients[2], linetype="dashed", color='red') +
+    geom_abline(intercept=mean(s$a), slope=mean(s$b), color='darkgreen')
+```
+
+truth in <font color="blue">blue</font>, without censored values in <font color="red">red</font>, and censor model in <font color="green">green</font>
+
+
+# Books
+
+Stan: [http://mc-stan.org](http://mc-stan.org)
+
+\ 
+
+![Doing Bayesian Data Analysis, by Kruschke](http://ecx.images-amazon.com/images/I/51Jt%2BWN9MqL._SX406_BO1,204,203,200_.jpg)
+
+\ 
+
+![Bayesian Data Analysis, by Gelman](http://ecx.images-amazon.com/images/I/51mTTnd%2B7mL._SX325_BO1,204,203,200_.jpg)
+
+
