@@ -6,3 +6,6 @@
 
 - 13 April 2016: [ProPL #5](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/229282081/)
   - [Practical Bayesian Analysis with Stan](/talks/2016/04_13_Practical_Bayesian_Analysis_with_Stan/README.md)
+
+- 25 April 2016: [ProPL #6](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/230354860/)
+  - [Stan: An under-the-hood tour](/talks/2016/04_25_Stan_An_under-the-hood_tour/)
