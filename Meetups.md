@@ -11,4 +11,4 @@
   - [Stan: An under-the-hood tour](/talks/2016/04_25_Stan_An_under-the-hood_tour/)
 
 - 11 May 2016: [ProPL #7](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/229910295/)
-  - [Lightweight implementation of ProPL via transformational compilation](/talks/05_11_Lightweight_implementation_of_ProPL_via_transformational_compilation/README.md)
+  - [Lightweight implementation of ProPL via transformational compilation](/talks/2016/05_11_Lightweight_implementation_of_ProPL_via_transformational_compilation/README.md)
