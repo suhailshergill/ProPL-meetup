@@ -12,3 +12,6 @@
 
 - 11 May 2016: [ProPL #7](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/229910295/)
   - [Lightweight implementation of ProPL via transformational compilation](/talks/2016/05_11_Lightweight_implementation_of_ProPL_via_transformational_compilation/README.md)
+
+- 09 June 2016: [ProPL #8](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/229969968/)
+  - [A provably correct sampler for probabilistic programs](/talks/2016/06_09_A_provably_correct_sampler_for_probabilistic_programs/README.md)
