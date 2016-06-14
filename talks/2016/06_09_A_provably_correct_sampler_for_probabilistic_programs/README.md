@@ -8,10 +8,13 @@ and prove its correctness.
 ## Concrete comparison with Stan
 
 Richard Hydomako has created
-[the following iPython notebook](https://gist.github.com/rhydomako/bcfc66a3d6947899723eb678b5c5e5c5)
-which demonstrates how their technique matches up to stan's implementation on
-the example presented in Figure 2a in Hur et al
-([iPython source](/2016_06_08_infer_paper.ipynb)).
+[the following iPython notebook](/2016_06_08_infer_paper.ipynb) which
+demonstrates how their technique matches up to stan's implementation on the
+example presented in Figure 2a in Hur et al. Torsten Scholak has also
+contributed [his iPython notebook](/stan_workaround.ipynb) which demonstrates
+the source transformation which allows Stan to infer the correct
+distribution. This points to a systemic bug in the Stan sampler (see
+[stan-dev/stan#1917](https://github.com/stan-dev/stan/issues/1917)).
 
 ## Basis of the technique
 
