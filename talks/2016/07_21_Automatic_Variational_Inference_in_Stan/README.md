@@ -6,3 +6,7 @@ Automatic Differentiation Variational Inference. The
 [original paper from 2015](http://arxiv.org/abs/1506.03431) did not elaborate
 quite as much as some of us found the 2016 version (titled "Automatic
 Differentiation Variational Inferenve") more accessible.
+
+[Richard Hydomako](https://github.com/rhydomako) has contributed
+[an associated ipython notebook](./2016_07_07_notes_on_advi.ipynb) with notes
+from the paper touching on the basic ideas.
