@@ -15,3 +15,6 @@
 
 - 09 June 2016: [ProPL #8](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/229969968/)
   - [A provably correct sampler for probabilistic programs](/talks/2016/06_09_A_provably_correct_sampler_for_probabilistic_programs/README.md)
+
+- 21 July 2016: [ProPL #9](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/231688927/)
+  - [Automatic Variational Inference in Stan](/talks/2016/07_21_Automatic_Variational_Inference_in_Stan/README.md)
