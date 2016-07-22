@@ -12,7 +12,7 @@ Differentiation Variational Inferenve") more accessible.
 from the paper touching on the basic ideas.
 
 You can see a better rendering of the above notebook 
-[here](http://nbviewer.jupyter.org/github/suhailshergill/ProPL-meetup/blob/master/talks/2016/07_21_Automatic_Variational_Inference_in_Stan/2016_07_07_notes_on_advi.ipynb).
+[here](http://nbviewer.jupyter.org/github/suhailshergill/ProPL-meetup/blob/propl%239/talks/2016/07_21_Automatic_Variational_Inference_in_Stan/2016_07_07_notes_on_advi.ipynb).
 
 # Notes
 
