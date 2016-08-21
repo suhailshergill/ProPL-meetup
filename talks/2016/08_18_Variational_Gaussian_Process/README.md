@@ -35,3 +35,11 @@
   - You may lose one of the properties that the second-order statistic defines properties.
 - Size of the "variational dataset"
 - What is the motivation to connect it to autoencoders?
+
+
+# Resources
+- [Printable version](talk.pdf) of the slides
+- [Video recording](http://videolectures.net/iclr2016_tran_variational_gaussian/) of a talk given by Dustin Tran on his paper
+- [IPython Notebook](gaussian_processes.ipynb) demonstrating Gaussian process regression
+- The presentation's [repository](https://github.com/tscholak/variational_gaussian_process)
+- [Preprints](http://arxiv.org/find/stat/1/au:+Blei_D/0/1/0/all/0/1) of Blei Lab articles
