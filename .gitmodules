@@ -1,3 +1,6 @@
 [submodule "04_02__Bayesian_Learning_of_Classifiers_with_Stan__Torsten_Scholak/talk_sources"]
 	path = 04_02__Bayesian_Learning_of_Classifiers_with_Stan__Torsten_Scholak/talk_sources
 	url = https://github.com/tscholak/bayesian_classification_with_stan
+[submodule "talks/2016/08_18_Variational_Gaussian_Process/variational_gaussian_process"]
+	path = talks/2016/08_18_Variational_Gaussian_Process/variational_gaussian_process
+	url = https://github.com/tscholak/variational_gaussian_process
