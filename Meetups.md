@@ -18,3 +18,6 @@
 
 - 21 July 2016: [ProPL #9](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/231688927/)
   - [Automatic Variational Inference in Stan](/talks/2016/07_21_Automatic_Variational_Inference_in_Stan/README.md)
+
+- 08 August 2016: [ProPL #10](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/231728607/)
+  - [The Variational Gaussian Process](/talks/2016/08_18_Variational_Gaussian_Process/README.md)
