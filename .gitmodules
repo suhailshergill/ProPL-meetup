@@ -4,3 +4,6 @@
 [submodule "talks/2016/08_18_Variational_Gaussian_Process/variational_gaussian_process"]
 	path = talks/2016/08_18_Variational_Gaussian_Process/variational_gaussian_process
 	url = https://github.com/tscholak/variational_gaussian_process
+[submodule "live-coding/2016/09_15_Titanic_dataset/rhydomako/pymc3_logistic-regression"]
+	path = live-coding/2016/09_15_Titanic_dataset/rhydomako/pymc3_logistic-regression
+	url = https://gist.github.com/67395c7cf392aaffccdf05feaa4977e9.git
