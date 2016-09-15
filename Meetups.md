@@ -1,5 +1,6 @@
 # Meetups
 
+## Talks
 - 09 March 2016: [ProPL #4](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/229134538/)
   - [A Random Walk towards Markov Chain Monte Carlo](https://github.com/stevenmpostma/mcmc/blob/3627b5429d9599929a3e02b961be6f68479a42b8/ARandomWalktoMCMC.pdf)
   - [Bayesian Learning of Classifiers with Stan](/talks/2016/04_02__Bayesian_Learning_of_Classifiers_with_Stan__Torsten_Scholak/)
@@ -21,3 +22,8 @@
 
 - 08 August 2016: [ProPL #10](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/231728607/)
   - [The Variational Gaussian Process](/talks/2016/08_18_Variational_Gaussian_Process/README.md)
+
+## Live coding sessions
+
+- 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
+  - [The Titanic dataset](/live-coding/2016/09_15_Titanic_dataset/README.md)
