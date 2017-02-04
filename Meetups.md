@@ -29,6 +29,9 @@
 - 15 December 2016: [ProPL #14](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/233112645/)
   - [A Probabilistic Theory of Deep Learning](/talks/2016/12_15_A_Probabilistic_Theory_of_Deep_Learning/README.md)
 
+- 25 January 2016: [ProPL #15](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/236693234/)
+  - [Deep Probabilistic Programming](/talks/2017/01_25_Deep_Probabilistic_Programming/README.md)
+
 ## Live coding sessions
 
 - 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
