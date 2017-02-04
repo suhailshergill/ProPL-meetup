@@ -23,6 +23,9 @@
 - 08 August 2016: [ProPL #10](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/231728607/)
   - [The Variational Gaussian Process](/talks/2016/08_18_Variational_Gaussian_Process/README.md)
 
+- 17 November 2016: [ProPL #13](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/234388980/)
+  - [Scalable Bayesian Rule lists](/talks/2016/11_17_bayesian_rule_lists/README.md)
+
 ## Live coding sessions
 
 - 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
