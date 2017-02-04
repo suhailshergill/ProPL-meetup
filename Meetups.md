@@ -26,6 +26,9 @@
 - 17 November 2016: [ProPL #13](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/234388980/)
   - [Scalable Bayesian Rule lists](/talks/2016/11_17_bayesian_rule_lists/README.md)
 
+- 15 December 2016: [ProPL #14](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/233112645/)
+  - [A Probabilistic Theory of Deep Learning](/talks/2016/12_15_A_Probabilistic_Theory_of_Deep_Learning/README.md)
+
 ## Live coding sessions
 
 - 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
