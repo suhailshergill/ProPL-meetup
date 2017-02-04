@@ -27,3 +27,6 @@
 
 - 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
   - [The Titanic dataset](/live-coding/2016/09_15_Titanic_dataset/README.md)
+
+- 20 October 2016: [ProPL #12](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/234038437/)
+  - [The Titanic dataest](/live-coding/2016/10_20_Titanic_dataset/README.md)
