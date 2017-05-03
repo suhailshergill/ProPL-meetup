@@ -14,7 +14,7 @@ privacy-accuracy tradeoff.
  interesting to see how the results change in the face of different metrics.
 
 ## Paper
-- [Semi-supervised Knowledge Transfer for Deep Learning from Private Training Data](https://arxiv.org/abs/1610.05755): [pdf](./semi-supervised-knowledge-transfer-for-deep-learning-from-private-training-data_goodfellow-talwar.pdf)
+- [Semi-supervised Knowledge Transfer for Deep Learning from Private Training Data](https://arxiv.org/abs/1610.05755): [pdf with highlights](./semi-supervised-knowledge-transfer-for-deep-learning-from-private-training-data_goodfellow-talwar.pdf)
 
 ## Slides
 - [Google slides link (commentable)](https://docs.google.com/presentation/d/1FLXx9tnsekvgQMuhXn5oWInWEUxwVKjXxKFx_KTAZ_k/edit?usp=sharing)
