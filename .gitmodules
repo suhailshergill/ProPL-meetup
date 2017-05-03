@@ -7,3 +7,6 @@
 [submodule "live-coding/2016/09_15_Titanic_dataset/rhydomako/pymc3_logistic-regression"]
 	path = live-coding/2016/09_15_Titanic_dataset/rhydomako/pymc3_logistic-regression
 	url = https://gist.github.com/67395c7cf392aaffccdf05feaa4977e9.git
+[submodule "talks/2017/03_30_Bayesian_Generative_Adversarial_Networks/bgans"]
+	path = talks/2017/03_30_Bayesian_Generative_Adversarial_Networks/bgans
+	url = git@github.com:tscholak/bgans.git
