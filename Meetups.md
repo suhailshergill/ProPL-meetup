@@ -32,6 +32,9 @@
 - 25 January 2016: [ProPL #15](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/236693234/)
   - [Deep Probabilistic Programming](/talks/2017/01_25_Deep_Probabilistic_Programming/README.md)
 
+- 21 February 2017: [ProPL #16](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/236335784/)
+  - [Recent developments in Probabilistic Programming](/talks/2017/02_21_Recent_developments_in_Probabilistic_Programming/README.md)
+
 ## Live coding sessions
 
 - 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
