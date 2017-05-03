@@ -9,6 +9,10 @@ learning and demonstrated the ability of GANs (and more generally
 semi-supervised techniques) to get state-of-the-art results in the
 privacy-accuracy tradeoff.
 
+*NOTE*: given the well-known
+ [Accuracy paradox](https://en.wikipedia.org/wiki/Accuracy_paradox), it would be
+ interesting to see how the results change in the face of different metrics.
+
 ## Paper
 - [Semi-supervised Knowledge Transfer for Deep Learning from Private Training Data](https://arxiv.org/abs/1610.05755): [pdf](./semi-supervised-knowledge-transfer-for-deep-learning-from-private-training-data_goodfellow-talwar.pdf)
 
