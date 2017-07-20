@@ -48,3 +48,6 @@
 
 - 20 October 2016: [ProPL #12](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/234038437/)
   - [The Titanic dataest](/live-coding/2016/10_20_Titanic_dataset/README.md)
+
+- 25 May 2017: [ProPL #19](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/239557848/)
+  - [Bayesian Machine Learning - Reasoning under uncertainty with Edward](/live-coding/2017/05_25_Bayesian_machine_learning/README.md)
