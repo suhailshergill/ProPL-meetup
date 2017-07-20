@@ -41,6 +41,9 @@
 - 27 April 2017: [ProPL #18](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/238802040/)
   - [Differential Privacy, Deep Learning and GANs](/talks/2017/04_27_Differential_Privacy_Deep_Learning_and_GANs/README.md)
 
+- 29 June 2017: [ProPL #20](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/240283490/)
+  - [Bayesian Data Analysis - a discussion](/talks/2017/06_29_Bayesian_Data_Analysis/README.md)
+
 ## Live coding sessions
 
 - 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
