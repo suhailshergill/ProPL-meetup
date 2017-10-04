@@ -44,7 +44,7 @@
 - 29 June 2017: [ProPL #20](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/240283490/)
   - [Bayesian Data Analysis - a discussion](/talks/2017/06_29_Bayesian_Data_Analysis/README.md)
 
-- 29 June 2017: [ProPL #21](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/240389537/)
+- 20 July 2017: [ProPL #21](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/240389537/)
   - [An introduction to binary outcome Bayesian classifiers](/talks/2017/07_20_An_introduction_to_binary_outcome_Bayesian_classifiers/README.md)
 
 ## Live coding sessions
