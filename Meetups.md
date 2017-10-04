@@ -47,6 +47,9 @@
 - 20 July 2017: [ProPL #21](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/240389537/)
   - [An introduction to binary outcome Bayesian classifiers](/talks/2017/07_20_An_introduction_to_binary_outcome_Bayesian_classifiers/README.md)
 
+- 17 August 2017: [ProPL #22](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/240389537/)
+  - [Arithmetic Coding and Compression is Prediction](/talks/2017/08_17_Arithmetic_coding_and_compression_is_prediction/README.md)
+
 ## Live coding sessions
 
 - 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
