@@ -50,6 +50,9 @@
 - 17 August 2017: [ProPL #22](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/240389537/)
   - [Arithmetic Coding and Compression is Prediction](/talks/2017/08_17_Arithmetic_coding_and_compression_is_prediction/README.md)
 
+- 21 September 2017: [ProPL #23](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/242547225/)
+  - [BayesDB - A Probabilistic Programming System](/talks/2017/09_21_BayesDB_a_Probabilistic_Programming_System/README.md)
+
 ## Live coding sessions
 
 - 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
