@@ -53,7 +53,7 @@
 - 21 September 2017: [ProPL #23](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/242547225/)
   - [BayesDB - A Probabilistic Programming System](/talks/2017/09_21_BayesDB_a_Probabilistic_Programming_System/README.md)
 
-- 16 March 2018: [ProPL #23](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/248049275/)
+- 16 March 2018: [ProPL #25](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/248049275/)
   - [Machine Learning and Risk Modelling - challenges and advances](/talks/2018/03_16_Machine_Learning_and_Risk_Modelling_challenges_and_advances/README.md)
 ## Live coding sessions
 
