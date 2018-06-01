@@ -55,6 +55,9 @@
 
 - 16 March 2018: [ProPL #25](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/248049275/)
   - [Machine Learning and Risk Modelling - challenges and advances](/talks/2018/03_16_Machine_Learning_and_Risk_Modelling_challenges_and_advances/README.md)
+
+- 31 March 2018: [ProPL #26](https://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/rdttxlyxhbwb/)
+  - [Sequential Monte Carlo Filtering/Smoothing for State and Parameter Estimation in General Nonlinear State Space Systems](/talks/2018/05_31_Sequential_Monte_Carlo_Filtering_Smoothing/Sequential_Monte_Carlo_Filtering_Smoothing_Ali.pdf)
 ## Live coding sessions
 
 - 15 September 2016: [ProPL #11](http://www.meetup.com/Toronto-Probabilistic-Programming-Meetup/events/232240424/)
